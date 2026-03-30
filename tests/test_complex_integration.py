@@ -16,6 +16,7 @@ def test_apartment_costs_with_optional_parameters():
         type='rent'
     ))
 
+
     manager.bills.append(Bill(
         apartment='apart-polanka',
         date_due='2024-03-15',
