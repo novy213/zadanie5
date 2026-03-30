@@ -62,3 +62,25 @@ def test_get_apartment_costs_integration():
     # test ponizej nie bedzie pass
     assert manager.get_apartment_costs('apart-polanka', 2027, 1) == 0.0
     assert manager.get_apartment_costs('apart-polanka', 2027, 15) == 0.0
+
+
+def test_create_apartment_settlement_for_month_with_and_without_bills():
+    manager = Manager(Parameters())
+
+    settlement_with_bills = manager.create_apartment_settlement('apart-polanka', 2025, 1)
+    assert settlement_with_bills is not None
+    assert settlement_with_bills.apartment == 'apart-polanka'
+    assert settlement_with_bills.year == 2025
+    assert settlement_with_bills.month == 1
+    assert settlement_with_bills.total_rent_pln == 0.0
+    assert settlement_with_bills.total_bills_pln == 910.0
+    assert settlement_with_bills.total_due_pln == -910.0
+
+    settlement_without_bills = manager.create_apartment_settlement('apart-polanka', 2025, 2)
+    assert settlement_without_bills is not None
+    assert settlement_without_bills.apartment == 'apart-polanka'
+    assert settlement_without_bills.year == 2025
+    assert settlement_without_bills.month == 2
+    assert settlement_without_bills.total_rent_pln == 0.0
+    assert settlement_without_bills.total_bills_pln == 0.0
+    assert settlement_without_bills.total_due_pln == 0.0
