@@ -1,4 +1,4 @@
-from src.models import Apartment, ApartmentSettlement, Bill, Parameters, Tenant, Transfer
+from src.models import Apartment, ApartmentSettlement, Bill, Parameters, Tenant, TenantSettlement, Transfer
 
 
 class Manager:
@@ -53,4 +53,34 @@ class Manager:
             total_bills_pln=total_bills_pln,
             total_due_pln=balance_pln,
         )
+
+    def create_tenant_settlements(self, apartment_settlement: ApartmentSettlement):
+        tenants_in_apartment = [
+            (tenant_key, tenant)
+            for tenant_key, tenant in self.tenants.items()
+            if tenant.apartment == apartment_settlement.apartment
+        ]
+
+        if len(tenants_in_apartment) == 0:
+            return []
+
+        bills_share_pln = apartment_settlement.total_bills_pln / len(tenants_in_apartment)
+        settlements = []
+
+        for tenant_key, _tenant in tenants_in_apartment:
+            rent_pln = 0.0
+            total_due_pln = rent_pln + bills_share_pln
+            balance_pln = -total_due_pln
+            settlements.append(TenantSettlement(
+                tenant=tenant_key,
+                apartment_settlement=apartment_settlement.apartment,
+                month=apartment_settlement.month,
+                year=apartment_settlement.year,
+                rent_pln=rent_pln,
+                bills_pln=bills_share_pln,
+                total_due_pln=total_due_pln,
+                balance_pln=balance_pln,
+            ))
+
+        return settlements
         

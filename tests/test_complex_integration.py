@@ -84,3 +84,41 @@ def test_create_apartment_settlement_for_month_with_and_without_bills():
     assert settlement_without_bills.total_rent_pln == 0.0
     assert settlement_without_bills.total_bills_pln == 0.0
     assert settlement_without_bills.total_due_pln == 0.0
+
+
+def test_create_tenant_settlements_from_apartment_settlement():
+    manager = Manager(Parameters())
+    apartment_settlement = manager.create_apartment_settlement('apart-polanka', 2025, 1)
+
+    settlements_many = manager.create_tenant_settlements(apartment_settlement)
+    assert isinstance(settlements_many, list)
+    assert len(settlements_many) == 3
+
+    expected_share_many = 910.0 / 3.0
+    tenant_ids = [settlement.tenant for settlement in settlements_many]
+    assert 'tenant-1' in tenant_ids
+    assert 'tenant-2' in tenant_ids
+    assert 'tenant-3' in tenant_ids
+
+    for settlement in settlements_many:
+        assert settlement.apartment_settlement == 'apart-polanka'
+        assert settlement.year == 2025
+        assert settlement.month == 1
+        assert settlement.rent_pln == 0.0
+        assert settlement.bills_pln == pytest.approx(expected_share_many)
+        assert settlement.total_due_pln == pytest.approx(expected_share_many)
+        assert settlement.balance_pln == pytest.approx(-expected_share_many)
+
+    manager.tenants = {'tenant-1': manager.tenants['tenant-1']}
+    settlements_one = manager.create_tenant_settlements(apartment_settlement)
+    assert isinstance(settlements_one, list)
+    assert len(settlements_one) == 1
+    assert settlements_one[0].tenant == 'tenant-1'
+    assert settlements_one[0].bills_pln == 910.0
+    assert settlements_one[0].total_due_pln == 910.0
+    assert settlements_one[0].balance_pln == -910.0
+
+    manager.tenants = {}
+    settlements_none = manager.create_tenant_settlements(apartment_settlement)
+    assert isinstance(settlements_none, list)
+    assert len(settlements_none) == 0
